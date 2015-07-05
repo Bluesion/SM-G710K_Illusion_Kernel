@@ -384,7 +384,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-delete-null-pointer-checks \
                    -Wno-sizeof-pointer-memaccess \
                    -Wno-maybe-uninitialized \
-                   -Wno-unused-function \
                    -Wno-sequence-point
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
