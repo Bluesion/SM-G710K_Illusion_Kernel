@@ -67,8 +67,8 @@ MODULE_LICENSE("GPLv2");
 #define S2W_X_B2		S2W_X_B0-70
 
 /* Left -> Right */
-#define S2W_X_B3		S2W_X_B0+60
-#define S2W_X_B4		DEFAULT_S2W_X_MAX-145
+#define S2W_X_B3		S2W_X_B0+120
+#define S2W_X_B4		DEFAULT_S2W_X_MAX-70
 #define S2W_X_B5		DEFAULT_S2W_X_MAX-S2W_X_B0	
 
 /* Resources */
@@ -138,7 +138,7 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 	int r_prev_coord = 0, r_next_coord = 0;
 	bool single_touch = st;
 
-	if ((s2w_switch > 1) && (s2d_enabled))
+	if ((s2w_switch) && (s2d_enabled))
 		s2d_enabled = 0;
 
 	if (s2w_swap_coord == 1) {
@@ -209,7 +209,7 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 						if (exec_count) {
 							pr_info(LOGTAG"EXEC_COUNT\n");
 							if (s2d_enabled)
-								kcal_send_s2d(1);
+								update_preset_lcdc_lut_s2d(1);
 							else
 								sweep2wake_pwrtrigger();
 							exec_count = false;
@@ -239,7 +239,7 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 						if (exec_count) {
 							pr_info(LOGTAG"EXEC_COUNT\n");
 							if (s2d_enabled)
-								kcal_send_s2d(2);
+								update_preset_lcdc_lut_s2d(2);
 							else
 								sweep2wake_pwrtrigger();
 							exec_count = false;
@@ -498,7 +498,7 @@ static ssize_t s2w_sweep2wake_show(struct device *dev,
 static ssize_t s2w_sweep2wake_dump(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	if (buf[0] >= '0' && buf[0] <= '2' && buf[1] == '\n')
+	if (buf[0] >= '0' && buf[0] <= '1' && buf[1] == '\n')
                 if (s2w_switch != buf[0] - '0')
 		        s2w_switch = buf[0] - '0';
 
