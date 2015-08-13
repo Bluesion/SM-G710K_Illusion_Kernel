@@ -59,17 +59,23 @@
 #include "spm.h"
 #include "pm.h"
 #include "modem_notifier.h"
+#ifdef CONFIG_LCD_KCAL
+#include <mach/kcal.h>
+#include <linux/module.h>
+#include "../../../drivers/video/msm/mdss/mdss_fb.h"
+#include <linux/input/sweep2wake.h>
+extern int update_preset_lcdc_lut(void);
+#endif
 
 #ifdef CONFIG_PROC_AVC
 #include <linux/proc_avc.h>
 #endif
 
-#ifdef CONFIG_SEC_THERMISTOR
+#if defined(CONFIG_SEC_MILLET_PROJECT) || defined(CONFIG_SEC_MATISSE_PROJECT) || defined(CONFIG_MACH_S3VE3G_EUR) || defined (CONFIG_MACH_VICTOR3GDSDTV_LTN) || \
+    defined(CONFIG_SEC_AFYON_PROJECT) || defined(CONFIG_SEC_VICTOR_PROJECT) || defined(CONFIG_SEC_BERLUTI_PROJECT) || \
+    defined(CONFIG_SEC_GNOTE_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT) || defined(CONFIG_SEC_DEGAS_PROJECT) || \
+	defined(CONFIG_SEC_T10_PROJECT) || defined(CONFIG_SEC_T8_PROJECT) || defined(CONFIG_SEC_MEGA2_PROJECT) || defined(CONFIG_SEC_MS01_PROJECT)
 #include <mach/msm8x26-thermistor.h>
-#endif
-
-#ifdef CONFIG_LEDS_MAX77804K
-#include <linux/leds-max77804k.h>
 #endif
 
 #ifdef CONFIG_SENSORS_SSP
@@ -104,24 +110,6 @@ static int __init sensor_hub_init(void)
 	return 0;
 }
 #endif /* CONFIG_SENSORS_SSP */
-
-#ifdef CONFIG_LEDS_MAX77804K
-struct max77804k_led_platform_data max77804k_led_pdata = {
-	.num_leds = 2,
-
-	.leds[0].name = "leds-sec1",
-	.leds[0].id = MAX77804K_FLASH_LED_1,
-	.leds[0].timer = MAX77804K_FLASH_TIME_1000MS,
-	.leds[0].timer_mode = MAX77804K_TIMER_MODE_MAX_TIMER,
-	.leds[0].cntrl_mode = MAX77804K_LED_CTRL_BY_FLASHSTB,
-	.leds[0].brightness = 0x3D,
-
-	.leds[1].name = "torch-sec1",
-	.leds[1].id = MAX77804K_TORCH_LED_1,
-	.leds[1].cntrl_mode = MAX77804K_LED_CTRL_BY_FLASHSTB,
-	.leds[1].brightness = 0x06,
-};
-#endif
 
 static struct memtype_reserve msm8226_reserve_table[] __initdata = {
 	[MEMTYPE_SMI] = {
@@ -195,6 +183,129 @@ static void __init msm8226_reserve(void)
 #endif
 }
 
+#ifdef CONFIG_LCD_KCAL
+extern int g_kcal_r;
+extern int g_kcal_g;
+extern int g_kcal_b;
+
+extern int g_kcal_min;
+extern int down_kcal, up_kcal;
+extern void sweep2wake_pwrtrigger(void);
+
+int kcal_set_values(int kcal_r, int kcal_g, int kcal_b)
+{
+	if (kcal_r > 255 || kcal_r < 0)
+		kcal_r = kcal_r < 0 ? 0 : kcal_r;
+		kcal_r = kcal_r > 255 ? 255 : kcal_r;
+	if (kcal_g > 255 || kcal_g < 0)
+		kcal_g = kcal_g < 0 ? 0 : kcal_g;
+		kcal_g = kcal_g > 255 ? 255 : kcal_g;
+	if (kcal_b > 255 || kcal_b < 0)
+		kcal_b = kcal_b < 0 ? 0 : kcal_b;
+		kcal_b = kcal_b > 255 ? 255 : kcal_b;
+
+	g_kcal_r = kcal_r < g_kcal_min ? g_kcal_min : kcal_r;
+	g_kcal_g = kcal_g < g_kcal_min ? g_kcal_min : kcal_g;
+	g_kcal_b = kcal_b < g_kcal_min ? g_kcal_min : kcal_b;
+
+	if (kcal_r < g_kcal_min || kcal_g < g_kcal_min || kcal_b < g_kcal_min)
+		update_preset_lcdc_lut();
+
+	return 0;
+}
+
+static int kcal_get_values(int *kcal_r, int *kcal_g, int *kcal_b)
+{
+	*kcal_r = g_kcal_r;
+	*kcal_g = g_kcal_g;
+	*kcal_b = g_kcal_b;
+	return 0;
+}
+
+int kcal_set_min(int kcal_min)
+{
+	g_kcal_min = kcal_min;
+
+	if (g_kcal_min > 255)
+		g_kcal_min = 255;
+
+	if (g_kcal_min < 0)
+		g_kcal_min = 0;
+
+	if (g_kcal_min > g_kcal_r || g_kcal_min > g_kcal_g || g_kcal_min > g_kcal_b) {
+		g_kcal_r = g_kcal_r < g_kcal_min ? g_kcal_min : g_kcal_r;
+		g_kcal_g = g_kcal_g < g_kcal_min ? g_kcal_min : g_kcal_g;
+		g_kcal_b = g_kcal_b < g_kcal_min ? g_kcal_min : g_kcal_b;
+		update_preset_lcdc_lut();
+	}
+
+	return 0;
+}
+
+static int kcal_get_min(int *kcal_min)
+{
+	*kcal_min = g_kcal_min;
+	return 0;
+}
+
+static int kcal_refresh_values(void)
+{
+	return update_preset_lcdc_lut();
+}
+
+void kcal_send_s2d(int set)
+{
+	int r, g, b;
+
+	r = g_kcal_r;
+	g = g_kcal_g;
+	b = g_kcal_b;
+
+	if (set == 1) {
+		r = r - down_kcal;
+		g = g - down_kcal;
+		b = b - down_kcal;
+
+		if ((r < g_kcal_min) && (g < g_kcal_min) && (b < g_kcal_min))
+			sweep2wake_pwrtrigger();
+
+	} else if (set == 2) {
+		if ((r == 255) && (g == 255) && (b == 255))
+			return;
+
+		r = r + up_kcal;
+		g = g + up_kcal;
+		b = b + up_kcal;
+	}
+
+	kcal_set_values(r, g, b);
+	update_preset_lcdc_lut();
+
+	return;
+}
+
+static struct kcal_platform_data kcal_pdata = {
+	.set_values = kcal_set_values,
+	.get_values = kcal_get_values,
+	.refresh_display = kcal_refresh_values,
+	.set_min = kcal_set_min,
+	.get_min = kcal_get_min
+};
+
+static struct platform_device kcal_platrom_device = {
+	.name = "kcal_ctrl",
+	.dev = {
+		.platform_data = &kcal_pdata,
+	}
+};
+
+void __init add_lcd_kcal_devices(void)
+{
+	pr_info (" LCD_KCAL_DEBUG : %s \n", __func__);
+	platform_device_register(&kcal_platrom_device);
+};
+#endif
+
 /*
  * Used to satisfy dependencies for devices that need to be
  * run early or in a particular order. Most likely your device doesn't fall
@@ -216,11 +327,19 @@ void __init msm8226_add_drivers(void)
 	else
 		msm_clock_init(&msm8226_clock_init_data);
 	tsens_tm_init_driver();
-
+#if defined(CONFIG_SEC_MILLET_PROJECT) || defined(CONFIG_SEC_MATISSE_PROJECT) || defined(CONFIG_MACH_S3VE3G_EUR)  || defined (CONFIG_MACH_VICTOR3GDSDTV_LTN)  || \
+    defined(CONFIG_SEC_AFYON_PROJECT) || defined(CONFIG_SEC_VICTOR_PROJECT) || defined(CONFIG_SEC_BERLUTI_PROJECT) || \
+    defined(CONFIG_SEC_HESTIA_PROJECT) || defined(CONFIG_SEC_GNOTE_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT) || \
+	defined(CONFIG_SEC_DEGAS_PROJECT) || defined(CONFIG_SEC_T10_PROJECT) || defined(CONFIG_SEC_T8_PROJECT) || defined(CONFIG_SEC_MEGA2_PROJECT) || \
+	defined(CONFIG_SEC_MS01_PROJECT)
 #ifdef CONFIG_SEC_THERMISTOR
 	platform_device_register(&sec_device_thermistor);
 #endif
+#endif
 	msm_thermal_device_init();
+#ifdef CONFIG_LCD_KCAL
+	add_lcd_kcal_devices();
+#endif
 }
 struct class *sec_class;
 EXPORT_SYMBOL(sec_class);
@@ -245,8 +364,7 @@ static void samsung_sys_class_init(void)
 	defined(CONFIG_SEC_S3VE_PROJECT) || defined(CONFIG_SEC_ATLANTIC_PROJECT) || defined(CONFIG_SEC_VICTOR_PROJECT) || \
 	defined(CONFIG_SEC_DEGAS_PROJECT) || defined(CONFIG_SEC_HESTIA_PROJECT) || defined(CONFIG_SEC_MEGA2_PROJECT) || \
 	defined(CONFIG_SEC_GNOTE_PROJECT) || defined(CONFIG_SEC_T10_PROJECT) || defined(CONFIG_SEC_T8_PROJECT) || \
-	defined(CONFIG_SEC_VASTA_PROJECT) || defined(CONFIG_SEC_VICTOR3GDSDTV_PROJECT) || defined(CONFIG_SEC_RUBENS_PROJECT) || \
-	defined(CONFIG_SEC_VASTALTE_CHN_CMMCC_DUOS_PROJECT) || defined(CONFIG_SEC_A5_PROJECT)
+	defined(CONFIG_SEC_VASTA_PROJECT) || defined(CONFIG_SEC_VICTOR3GDSDTV_PROJECT)
 /* Dummy init function for models that use QUALCOMM PMIC PM8226 charger*/
 void __init samsung_init_battery(void)
 {
