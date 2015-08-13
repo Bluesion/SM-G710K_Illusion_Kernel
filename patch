@@ -1,0 +1,109 @@
+From 833e85cd6c099d83eb0d36b4a8a4356ffac09d59 Mon Sep 17 00:00:00 2001
+From: renderbroken <zkennedy87@gmail.com>
+Date: Fri, 9 May 2014 21:03:43 -0700
+Subject: [PATCH] S2W, DT2W: Modify to use Powersuspend
+
+---
+ drivers/input/touchscreen/doubletap2wake.c | 21 ++++++++++-----------
+ drivers/input/touchscreen/sweep2wake.c     | 22 ++++++++++++++++++++++
+ 2 files changed, 32 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/input/touchscreen/doubletap2wake.c b/drivers/input/touchscreen/doubletap2wake.c
+index 2e5f939..b46db8e 100644
+--- a/drivers/input/touchscreen/doubletap2wake.c
++++ b/drivers/input/touchscreen/doubletap2wake.c
+@@ -29,8 +29,8 @@
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+ #include <linux/input.h>
+-#ifdef CONFIG_HAS_EARLYSUSPEND
+-#include <linux/earlysuspend.h>
++#ifdef CONFIG_POWERSUSPEND
++#include <linux/powersuspend.h>
+ #endif
+ #include <linux/hrtimer.h>
+ #include <asm-generic/cputime.h>
+@@ -300,19 +300,18 @@ static struct input_handler dt2w_input_handler = {
+ 	.id_table	= dt2w_ids,
+ };
+ 
+-#ifdef CONFIG_HAS_EARLYSUSPEND
+-static void dt2w_early_suspend(struct early_suspend *h) {
++#ifdef CONFIG_POWERSUSPEND
++static void dt2w_power_suspend(struct power_suspend *h) {
+ 	dt2w_scr_suspended = true;
+ }
+ 
+-static void dt2w_late_resume(struct early_suspend *h) {
++static void dt2w_power_resume(struct power_suspend *h) {
+ 	dt2w_scr_suspended = false;
+ }
+ 
+-static struct early_suspend dt2w_early_suspend_handler = {
+-	.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,
+-	.suspend = dt2w_early_suspend,
+-	.resume = dt2w_late_resume,
++static struct power_suspend dt2w_power_suspend_handler = {
++	.suspend = dt2w_power_suspend,
++	.resume = dt2w_power_resume,
+ };
+ #endif
+ 
+@@ -424,8 +423,8 @@ static int __init doubletap2wake_init(void)
+ 	if (rc)
+ 		pr_err("%s: Failed to register dt2w_input_handler\n", __func__);
+ 
+-#ifdef CONFIG_HAS_EARLYSUSPEND
+-	register_early_suspend(&dt2w_early_suspend_handler);
++#ifdef CONFIG_POWERSUSPEND
++	register_power_suspend(&dt2w_power_suspend_handler);
+ #endif
+ 
+ #ifndef ANDROID_TOUCH_DECLARED
+diff --git a/drivers/input/touchscreen/sweep2wake.c b/drivers/input/touchscreen/sweep2wake.c
+index d698a20..edcb2a6 100644
+--- a/drivers/input/touchscreen/sweep2wake.c
++++ b/drivers/input/touchscreen/sweep2wake.c
+@@ -33,6 +33,9 @@
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+ #include <linux/input.h>
++#ifdef CONFIG_POWERSUSPEND
++#include <linux/powersuspend.h>
++#endif
+ #include <linux/hrtimer.h>
+ 
+ /* uncomment since no touchscreen defines android touch, do that here */
+@@ -482,6 +485,21 @@ static struct input_handler s2w_input_handler = {
+ 	.id_table	= s2w_ids,
+ };
+ 
++#ifdef CONFIG_POWERSUSPEND
++static void s2w_power_suspend(struct power_suspend *h) {
++	s2w_scr_suspended = true;
++}
++
++static void s2w_power_resume(struct power_suspend *h) {
++	s2w_scr_suspended = false;
++}
++
++static struct power_suspend s2w_power_suspend_handler = {
++	.suspend = s2w_power_suspend,
++	.resume = s2w_power_resume,
++};
++#endif
++
+ /*
+  * SYSFS stuff below here
+  */
+@@ -585,6 +603,10 @@ static int __init sweep2wake_init(void)
+ 	if (rc)
+ 		pr_err("%s: Failed to register s2w_input_handler\n", __func__);
+ 
++#ifdef CONFIG_POWERSUSPEND
++	register_power_suspend(&s2w_power_suspend_handler);
++#endif
++
+ #ifndef ANDROID_TOUCH_DECLARED
+ 	android_touch_kobj = kobject_create_and_add("android_touch", NULL) ;
+ 	if (android_touch_kobj == NULL) {
