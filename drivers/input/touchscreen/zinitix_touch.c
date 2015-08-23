@@ -56,6 +56,11 @@
 #include <linux/input/mt.h>
 #include <linux/of_gpio.h>
 
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+#include <linux/input/sweep2wake.h>
+#include <linux/input/doubletap2wake.h>
+#endif
+
 #ifdef CONFIG_SEC_DVFS
 #include <linux/cpufreq.h>
 #define TOUCH_BOOSTER_DVFS
@@ -2530,6 +2535,14 @@ static int bt532_ts_suspend(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bt532_ts_info *info = i2c_get_clientdata(client);
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+	if ((dt2w_switch)) {
+		pr_info("suspend avoided!\n");
+		return 0;
+	} else {
+#endif
+
 	if(!info->device_enabled)
 		return 0;
 	info->device_enabled = 0;
@@ -2575,6 +2588,9 @@ static int bt532_ts_suspend(struct device *dev)
 	dev_info(&client->dev, "suspend\n");
 #endif
 	up(&info->work_lock);
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+	}
+#endif
 
 	return 0;
 }

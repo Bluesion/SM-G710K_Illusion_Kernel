@@ -33,9 +33,6 @@
 #include <linux/slab.h>
 #include <linux/workqueue.h>
 #include <linux/input.h>
-#ifdef CONFIG_POWERSUSPEND
-#include <linux/powersuspend.h>
-#endif
 #include <linux/hrtimer.h>
 
 /* uncomment since no touchscreen defines android touch, do that here */
@@ -141,7 +138,7 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 	int r_prev_coord = 0, r_next_coord = 0;
 	bool single_touch = st;
 
-	if ((s2w_switch) && (s2d_enabled))
+	if ((s2w_switch > 1) && (s2d_enabled))
 		s2d_enabled = 0;
 
 	if (s2w_swap_coord == 1) {
@@ -212,7 +209,7 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 						if (exec_count) {
 							pr_info(LOGTAG"EXEC_COUNT\n");
 							if (s2d_enabled)
-								update_preset_lcdc_lut_s2d(1);
+								kcal_send_s2d(1);
 							else
 								sweep2wake_pwrtrigger();
 							exec_count = false;
@@ -242,7 +239,7 @@ static void detect_sweep2wake(int sweep_coord, int sweep_height, bool st)
 						if (exec_count) {
 							pr_info(LOGTAG"EXEC_COUNT\n");
 							if (s2d_enabled)
-								update_preset_lcdc_lut_s2d(2);
+								kcal_send_s2d(2);
 							else
 								sweep2wake_pwrtrigger();
 							exec_count = false;
@@ -485,21 +482,6 @@ static struct input_handler s2w_input_handler = {
 	.id_table	= s2w_ids,
 };
 
-#ifdef CONFIG_POWERSUSPEND
-static void s2w_power_suspend(struct power_suspend *h) {
-	s2w_scr_suspended = true;
-}
-
-static void s2w_power_resume(struct power_suspend *h) {
-	s2w_scr_suspended = false;
-}
-
-static struct power_suspend s2w_power_suspend_handler = {
-	.suspend = s2w_power_suspend,
-	.resume = s2w_power_resume,
-};
-#endif
-
 /*
  * SYSFS stuff below here
  */
@@ -602,10 +584,6 @@ static int __init sweep2wake_init(void)
 	rc = input_register_handler(&s2w_input_handler);
 	if (rc)
 		pr_err("%s: Failed to register s2w_input_handler\n", __func__);
-
-#ifdef CONFIG_POWERSUSPEND
-	register_power_suspend(&s2w_power_suspend_handler);
-#endif
 
 #ifndef ANDROID_TOUCH_DECLARED
 	android_touch_kobj = kobject_create_and_add("android_touch", NULL) ;
