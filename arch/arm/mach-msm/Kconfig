@@ -524,7 +524,7 @@ config ARCH_MSM8226
 	select PM_DEVFREQ
 	select MSM_DEVFREQ_CPUBW
 	select MSM_PIL
-	select MSM_RUN_QUEUE_STATS
+	#select MSM_RUN_QUEUE_STATS
 	select ARM_HAS_SG_CHAIN
 	select REGULATOR
 	select MSM_RPM_REGULATOR_SMD
@@ -3562,7 +3562,7 @@ config MSM_CPU_FREQ_MAX
 config MSM_CPU_FREQ_MIN
 	int "Min CPU Frequency"
 	depends on MSM_CPU_FREQ_SET_MIN_MAX
-	default 245760
+	default 300000
 
 endif # CPU_FREQ_MSM
 
@@ -3580,6 +3580,8 @@ config MSM_DEVFREQ_CPUBW
 	  agnostic interface to so that some of the devfreq governors can be
 	  shared across SoCs.
 
+menu "CLOCKING and UNDERVOLTING"
+
 config CPU_OVERCLOCK
 	bool "enable CPU overclocking of Cortex A7"
 	default n
@@ -3587,10 +3589,17 @@ config CPU_OVERCLOCK
 	  Simple CPU Overclocking Option to 1.6 GHz
 
 config CPU_UNDERCLOCK
-	bool "enable CPU underclocking option"
+	bool "enable CPU underclocking of Cortex A7"
 	default n
 	help
-	  Enable CPU underclocking to 96Mhz
+	  Enable CPU underclocking to 192Mhz
+
+config USERSPACE_VOLTAGE_CONTROL
+	bool "enable USERSPACE_VOLTAGE_CONTROL"
+	default n
+	help
+	   This is a test for voltage control
+endmenu
 
 config USERSPACE_VOLTAGE_CONTROL
 	bool "Enable Userspace CPU Voltage Control"
