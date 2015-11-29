@@ -559,7 +559,7 @@ static void remove_rmap_item_from_tree(struct rmap_item *rmap_item)
 		 */
 		age = (unsigned char)(ksm_scan.seqnr - rmap_item->address);
 #ifndef CONFIG_KSM_CHECK_PAGE
- 		BUG_ON(age > 1);
+		BUG_ON(age > 1);
 #endif
 		if (!age)
 			rb_erase(&rmap_item->node, &root_unstable_tree);

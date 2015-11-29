@@ -3557,7 +3557,7 @@ config MSM_CPU_FREQ_SET_MIN_MAX
 config MSM_CPU_FREQ_MAX
 	int "Max CPU Frequency"
 	depends on MSM_CPU_FREQ_SET_MIN_MAX
-	default 1593600
+	default 1190400
 
 config MSM_CPU_FREQ_MIN
 	int "Min CPU Frequency"
@@ -3581,7 +3581,7 @@ config MSM_DEVFREQ_CPUBW
 	  shared across SoCs.
 
 menu "CLOCKING and UNDERVOLTING"
-
+	 
 config CPU_OVERCLOCK
 	bool "enable CPU overclocking of Cortex A7"
 	default n
@@ -3592,7 +3592,7 @@ config CPU_UNDERCLOCK
 	bool "enable CPU underclocking of Cortex A7"
 	default n
 	help
-	  Enable CPU underclocking to 192Mhz
+	   Enable CPU underclocking to 192Mhz
 
 config USERSPACE_VOLTAGE_CONTROL
 	bool "enable USERSPACE_VOLTAGE_CONTROL"
@@ -3600,12 +3600,6 @@ config USERSPACE_VOLTAGE_CONTROL
 	help
 	   This is a test for voltage control
 endmenu
-
-config USERSPACE_VOLTAGE_CONTROL
-	bool "Enable Userspace CPU Voltage Control"
-	default y
-	help
-	  Userspace Voltage Control
 
 config MSM_AVS_HW
 	bool "Enable Adaptive Voltage Scaling (AVS)"
