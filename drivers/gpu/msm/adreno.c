@@ -97,14 +97,9 @@ static struct devfreq_msm_adreno_tz_data adreno_tz_data = {
 	.device_id = KGSL_DEVICE_3D0,
 };
 
-static struct devfreq_msm_adreno_tz_data adreno_conservative_data = {
-	.device_id = KGSL_DEVICE_3D0,
-};
-
 static const struct devfreq_governor_data adreno_governors[] = {
 	{ .name = "simple_ondemand", .data = &adreno_ondemand_data },
 	{ .name = "msm-adreno-tz", .data = &adreno_tz_data },
-	{ .name = "conservative", .data = &adreno_conservative_data },
 };
 
 static const struct kgsl_functable adreno_functable;
@@ -2099,6 +2094,7 @@ static int adreno_start(struct kgsl_device *device, int priority)
 	int nice = task_nice(current);
 	int ret;
 
+	/* No priority (normal latency) call the core start function directly */
 	if (priority && (_wake_nice < nice))
 		set_user_nice(current, _wake_nice);
 
@@ -3414,6 +3410,7 @@ static void adreno_power_stats(struct kgsl_device *device,
 	memset(stats, 0, sizeof(*stats));
 
 	/*
+	 * Get the busy cycles counted since the counter was last reset.
 	 * If we're not currently active, there shouldn't have been
 	 * any cycles since the last time this function was called.
 	 */

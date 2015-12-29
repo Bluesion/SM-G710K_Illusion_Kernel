@@ -279,7 +279,6 @@ config TC358764_I2C_CONTROL
 	default n
 	---help---
 	The TOSHIBA I2C CONTROLLER support
-
 config LCD_FORCE_VIDEO_MODE
 	bool "forcing video mode on cmd panle"
 	default n
@@ -346,9 +345,4 @@ config MDSS_UD_FLIP
 
 config SEC_MIPI_CLOCK_TUNING
 	bool "MIPI DSI Clock Tuning Tool"
-	default n
-
-config LCD_KCAL
-	depends on FB_MSM_MDSS
-	bool "Enable sysfs for LCD KCAL"
 	default n

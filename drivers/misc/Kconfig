@@ -1074,14 +1074,6 @@ config MUIC_DET_JACK
 	 Some project use muic earjack instead of 3.5phi earjack.
 	 Max77804k muic also support earjack detection.
 
-config HPH_HIGH_PERF
-	bool "Enable Headset in high performance"
-	default n
-	help
-	 Invoke class AB mode for headset path when sample rate
-	 is set to 192KHz and bit width is set to 24. Change enables
-	 headset path in Ultra High Quality Audio(UHQA)mode.
-
 config SGLTE_QSC_MODEM
 	bool "SGLTE QSC MODEM DOWNLOAD"
 	default n
@@ -1091,6 +1083,14 @@ config SGLTE_QSC_MODEM
 config QC_SIM_SLOT_SWITCH
 	bool "QC_SIM_SLOT_SWITCH"
 	default n
+
+config HPH_HIGH_PERF
+	bool "Enable Headset in high performance"
+	default n
+	help
+	 Invoke class AB mode for headset path when sample rate
+	 is set to 192KHz and bit width is set to 24. Change enables
+	 headset path in Ultra High Quality Audio(UHQA)mode.
 
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"

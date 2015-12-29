@@ -6557,4 +6557,3 @@ module_exit(tapan_codec_exit);
 
 MODULE_DESCRIPTION("Tapan codec driver");
 MODULE_LICENSE("GPL v2");
-

@@ -118,7 +118,7 @@ void erandom_get_random_bytes(char *buf, size_t count)
 	   RNG is already restored in the boot sequence (not critical, but
 	   better.
 	*/
-	
+
 	if (!erandom_seeded) {
 		erandom_seeded = 1;
 		init_rand_state(state, EXTERNAL_SEED);
@@ -340,7 +340,7 @@ static int frandom_init_module(void)
 		printk(KERN_WARNING "frandom: Failed to register class fastrng\n");
 		goto error0;
 	}
-	
+
 	/*
 	 * Register your major, and accept a dynamic number. This is the
 	 * first thing to do, in order to avoid releasing other module's
@@ -413,9 +413,3 @@ module_init(frandom_init_module);
 module_exit(frandom_cleanup_module);
 
 EXPORT_SYMBOL(erandom_get_random_bytes);
-
-MODULE_AUTHOR("Eli Billauer <eli@billauer.co.il>");
-MODULE_DESCRIPTION("'char_random_frandom' - A fast random generator for "
-"general usage");
-MODULE_LICENSE("GPL");
-

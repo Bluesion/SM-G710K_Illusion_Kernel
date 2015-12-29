@@ -136,8 +136,6 @@ abort_resume:
 	mutex_unlock(&power_suspend_lock);
 }
 
-bool power_suspended = false;
-
 void set_power_suspend_state(int new_state)
 {
 	unsigned long irqflags;
@@ -148,14 +146,12 @@ void set_power_suspend_state(int new_state)
 		pr_info("[POWERSUSPEND] state activated.\n");
 		#endif
 		state = new_state;
-		power_suspended = true;
 		queue_work(suspend_work_queue, &power_suspend_work);
 	} else if (state == POWER_SUSPEND_ACTIVE && new_state == POWER_SUSPEND_INACTIVE) {
 		#ifdef POWER_SUSPEND_DEBUG
 		pr_info("[POWERSUSPEND] state deactivated.\n");
 		#endif
 		state = new_state;
-		power_suspended = false;
 		queue_work(suspend_work_queue, &power_resume_work);
 	}
 	spin_unlock_irqrestore(&state_lock, irqflags);
@@ -255,7 +251,7 @@ static ssize_t power_suspend_version_show(struct kobject *kobj,
 }
 
 static struct kobj_attribute power_suspend_version_attribute =
-	__ATTR(power_suspend_version, 0444,
+       __ATTR(power_suspend_version, 0444,
 		power_suspend_version_show,
 		NULL);
 
@@ -275,6 +271,7 @@ static struct attribute_group power_suspend_attr_group =
 static struct kobject *power_suspend_kobj;
 
 // ------------------ sysfs interface -----------------------
+
 static int __init power_suspend_init(void)
 {
 
@@ -325,4 +322,3 @@ MODULE_AUTHOR("Paul Reioux <reioux@gmail.com> / Jean-Pierre Rasquin <yank555.lu@
 MODULE_DESCRIPTION("power_suspend - A replacement kernel PM driver for"
         "Android's deprecated early_suspend/late_resume PM driver!");
 MODULE_LICENSE("GPL v2");
-
