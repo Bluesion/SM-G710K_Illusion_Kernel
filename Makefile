@@ -1,6 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 4
-SUBLEVEL = 0
+SUBLEVEL = 1
 EXTRAVERSION =
 NAME = Saber-toothed Squirrel
 
@@ -381,6 +381,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Wno-implicit-function-declaration \
 		   -Wno-format-security \
+		   -Wno-array-bounds \
 		   -fno-delete-null-pointer-checks \
                    -Wno-sizeof-pointer-memaccess \
                    -Wno-maybe-uninitialized \

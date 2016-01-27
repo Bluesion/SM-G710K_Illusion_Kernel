@@ -174,6 +174,9 @@ struct global_cwq {
 	unsigned int		cpu;		/* I: the associated cpu */
 	unsigned int		flags;		/* L: GCWQ_* flags */
 
+	int			nr_workers;	/* L: total number of workers */
+	int			nr_idle;	/* L: currently idle ones */
+
 	/* workers are chained either in busy_hash or pool idle_list */
 	struct hlist_head	busy_hash[BUSY_WORKER_HASH_SIZE];
 						/* L: hash of busy workers */
@@ -1212,7 +1215,7 @@ static void worker_enter_idle(struct worker *worker)
 	 * warning may trigger spuriously.  Check iff trustee is idle.
 	 */
 	WARN_ON_ONCE(gcwq->trustee_state == TRUSTEE_DONE &&
-		     pool->nr_workers == pool->nr_idle &&
+		     gcwq->nr_workers == gcwq->nr_idle &&
 		     atomic_read(get_pool_nr_running(pool)));
 }
 
