@@ -386,7 +386,18 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
                    -Wno-sizeof-pointer-memaccess \
                    -Wno-maybe-uninitialized \
                    -Wno-unused-function \
-                   -Wno-sequence-point
+                   -Wno-unused-const-variable \
+                   -Wno-sign-compare \
+                   -Wno-unused-parameter \
+                   -Wno-misleading-indentation \
+                   -Wno-sequence-point \
+                   -Wno-discarded-array-qualifiers \
+                   -Wno-sizeof-array-argument \
+                   -w \
+                   -Wno-shift-count-overflow \
+                   -Wno-shift-negative-value \
+                   -Wno-shift-count-negative \
+                   -Wno-bool-compare
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
