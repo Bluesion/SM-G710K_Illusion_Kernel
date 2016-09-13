@@ -29,8 +29,8 @@
 #include <linux/slab.h>
 #include <linux/workqueue.h>
 #include <linux/input.h>
-#ifdef CONFIG_POWERSUSPEND
-#include <linux/powersuspend.h>
+#ifdef CONFIG_HAS_EARLYSUSPEND
+#include <linux/earlysuspend.h>
 #endif
 #include <linux/hrtimer.h>
 #include <asm-generic/cputime.h>
@@ -57,7 +57,7 @@ MODULE_LICENSE("GPLv2");
 /* Tuneables */
 #define DT2W_DEBUG		0
 #define DT2W_DEFAULT		0
-#define DT2W_PWRKEY_DUR		60
+#define DT2W_PWRKEY_DUR		10
 #define DT2W_TIME		700
 
 /* Resources */
@@ -303,18 +303,19 @@ static struct input_handler dt2w_input_handler = {
 	.id_table	= dt2w_ids,
 };
 
-#ifdef CONFIG_POWERSUSPEND
-static void dt2w_power_suspend(struct power_suspend *h) {
+#ifdef CONFIG_HAS_EARLYSUSPEND
+static void dt2w_early_suspend(struct early_suspend *h) {
 	dt2w_scr_suspended = true;
 }
 
-static void dt2w_power_resume(struct power_suspend *h) {
+static void dt2w_early_resume(struct early_suspend *h) {
 	dt2w_scr_suspended = false;
 }
 
-static struct power_suspend dt2w_power_suspend_handler = {
-	.suspend = dt2w_power_suspend,
-	.resume = dt2w_power_resume,
+static struct early_suspend dt2w_early_suspend_handler = {
+	.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,
+	.suspend = dt2w_early_suspend,
+	.resume = dt2w_late_resume,
 };
 #endif
 
@@ -426,8 +427,8 @@ static int __init doubletap2wake_init(void)
 	if (rc)
 		pr_err("%s: Failed to register dt2w_input_handler\n", __func__);
 
-#ifdef CONFIG_POWERSUSPEND
-	register_power_suspend(&dt2w_power_suspend_handler);
+ifdef CONFIG_HAS_EARLYSUSPEND
+	register_early_suspend(&dt2w_early_suspend_handler);
 #endif
 
 #ifndef ANDROID_TOUCH_DECLARED
