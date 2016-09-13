@@ -427,7 +427,7 @@ static int __init doubletap2wake_init(void)
 	if (rc)
 		pr_err("%s: Failed to register dt2w_input_handler\n", __func__);
 
-ifdef CONFIG_HAS_EARLYSUSPEND
+#ifdef CONFIG_HAS_EARLYSUSPEND
 	register_early_suspend(&dt2w_early_suspend_handler);
 #endif
 
